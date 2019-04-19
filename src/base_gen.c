@@ -12,6 +12,23 @@ double *tri_buffer;
 double *sin_buffer;
 double *mtn_buffer;
 
+void constrain_params(wave_params *params) {
+    if (params->width > 1.0)
+        params->width = 1.0;
+    else if (params->width < 0.0)
+        params->width = 0.0;
+
+    if (params->left_slope > 1.0)
+        params->left_slope = 1.0;
+    else if (params->left_slope < 0.0)
+        params->left_slope = 0.0;
+
+    if (params->right_slope > 1.0)
+        params->right_slope = 1.0;
+    else if (params->right_slope < 0.0)
+        params->right_slope = 0.0;
+}
+
 void buffer_wave(double *buf, int length, wave_params *params) {
     int half = length * params->width;
     int ls_start = half * params->left_slope;
@@ -33,7 +50,11 @@ void buffer_wave(double *buf, int length, wave_params *params) {
 }
 
 double get_wave_sample(int pos, int sample_rate, wave_params *params) {
+    constrain_params(params);
+
     pos = pos % sample_rate;
+    
+    // calculate wave shape params
     int half = sample_rate * params->width;
     int ls_start = half * params->left_slope;
     int rs_start = sample_rate - ((sample_rate - half) * params->right_slope);

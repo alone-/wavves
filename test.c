@@ -2,63 +2,44 @@
 #include <stdlib.h>
 
 #include "src/base_gen.h"
+#include "src/lfo.h"
 
 #define SAMPLE_RATE (44100)
 #define HALF_SAMPLE_RATE (22050)
-#define AUDIO_LENGTH (60)
+#define AUDIO_LENGTH (5)
 #define NUM_SAMPLES (AUDIO_LENGTH * SAMPLE_RATE)
 
 double get_samples(double *buf, int hz, int num_samples, wave_params *params) {
     int pos = 0;
     int sample = 0;
 
-    double pmod = 0;
-    double pinc = 0.0000005;
-    double pthresh = 0.05;
+    lfo pitch_lfo;
+    init_lfo(&pitch_lfo, 0, 0.00005, 0.01);
 
-    double cmod = 0;
-    double cinc = 0.000001;
-    double cthresh = 0.45;
+    lfo width_lfo;
+    init_lfo(&width_lfo, 0, 0.00001, 0.1);
 
-    double lmod = 0;
-    double linc = 0.00008;
-    double lthresh = 0.45;
+    lfo left_lfo;
+    init_lfo(&left_lfo, 0, 0.00001, 0.005);
 
-    double rmod = 0;
-    double rinc = 0.00003;
-    double rthresh = 0.45;
+    lfo right_lfo;
+    init_lfo(&right_lfo, 0.01, 0.00001, 0.004);
 
     for (sample = 0; sample < num_samples; sample++) {
-        params->width = 0.5 + cmod;
-        params->left_slope = 0.5 + lmod;
-        params->right_slope = 0.5 + rmod;
+        params->width = 0.5 + width_lfo.mod;
+        params->left_slope = 0.5 + left_lfo.mod;
+        params->right_slope = 0.5 + right_lfo.mod;
         buf[sample] = get_wave_sample(pos, SAMPLE_RATE, params) * 0.75;
 
-        pos += hz + (hz * pmod);
-        //pos += hz;
+        pos += hz + (hz * pitch_lfo.mod);
 
         if (pos >= SAMPLE_RATE)
             pos -= SAMPLE_RATE;
 
-
-        //pitch mod
-        pmod += pinc;
-        if (pmod > pthresh || pmod < -pthresh)
-            pinc *= -1;
-
-        //center mod
-        cmod += cinc;
-        if (cmod > cthresh || cmod < -cthresh)
-            cinc *= -1;
-
-        rmod += rinc;
-        if (rmod > rthresh || rmod < -rthresh)
-            rinc *= -1;
-
-        lmod += linc;
-        if (lmod > lthresh || lmod < -lthresh)
-            linc *= -1;
-
+        update_lfo(&pitch_lfo);
+        update_lfo(&width_lfo);
+        update_lfo(&right_lfo);
+        update_lfo(&left_lfo);
     }
 }
 
@@ -74,11 +55,12 @@ int main() {
     params.right_slope = 1.0;
 
     fp = fopen("square.raw", "w");
-    get_samples(&buf[0], 50, NUM_SAMPLES, &params);
-    get_samples(&buf2[0], 55, NUM_SAMPLES, &params);
+    get_samples(&buf[0], 500, NUM_SAMPLES, &params);
+    get_samples(&buf2[0], 505, NUM_SAMPLES, &params);
 
     for (int i = 0; i < NUM_SAMPLES; i++)
-        out[i] = (buf[i] + buf2[i]) / 2;
+        //out[i] = (buf[i] + buf2[i]) / 2;
+        out[i] = (buf[i] * buf2[i]);
 
     fwrite(out, 1, sizeof(double) * NUM_SAMPLES, fp);
 

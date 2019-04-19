@@ -2,7 +2,7 @@
 
     base_gen.h
 
-    Fill buffers with basic waveforms.
+    Fill buffers with basic waveforms, or get a single sample.
 
 */
 
@@ -22,6 +22,8 @@ typedef enum wave_t {
     WAVE_MTN
 } wave_t;
 
+// TODO: overload buffer_wave to take wave_t and set appropriate params based on type
+// TODO: give buffer_wave and get_wave_sample more specific names to avoid conflicts
 void buffer_wave(double *buf, int length, wave_params *params);
 double get_wave_sample(int pos, int sample_rate, wave_params *params);
 
