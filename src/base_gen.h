@@ -6,6 +6,9 @@
 
 */
 
+#ifndef BASE_GEN_H
+#define BASE_GEN_H
+
 typedef struct wave_params {
     float width;
     float left_slope;
@@ -27,3 +30,4 @@ typedef enum wave_t {
 void buffer_wave(double *buf, int length, wave_params *params);
 double get_wave_sample(int pos, int sample_rate, wave_params *params);
 
+#endif
